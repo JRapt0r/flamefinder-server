@@ -41,7 +41,7 @@ router.get('/proxy', function (req, res) {
     const CRSNBR = req.query.CRSNBR;
 
     if (!(CRSNBR && CRSSUBJCD)) {
-        return res.status(400).json({code: 400, msg: "Malformed request"});
+        return res.status(400).json({ code: 400, msg: "Malformed request" });
     }
 
     let url = new URL("https://catalog.uic.edu/ribbit/index.cgi");
@@ -362,7 +362,7 @@ router.get('/instructor/:PrimaryInstructor', (req, res) => {
             return res.send(results[0]);
         }
         else {
-            return res.status(404).json({ status: 404, msg: "404 error" });
+            return res.status(404).json({ code: 404, msg: "404 error" });
         }
     })
     .then(null, err => {
