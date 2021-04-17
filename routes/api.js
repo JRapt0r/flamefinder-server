@@ -304,7 +304,7 @@ router.get('/department/:deptCode', function (req, res) {
     const { deptCode } = req.params;
 
     // Protect against SQL injection
-    if (!deptCode.match(/^[A-Z]{2,4}$/)) {
+    if (!deptCode.match(/^[A-Z]{2,4}$/i)) {
         return res.status(400).json({ code: 400, msg: "Invalid department" });
     }
 
@@ -312,7 +312,8 @@ router.get('/department/:deptCode', function (req, res) {
         SELECT a.CRSSUBJCD, a.CRSNBR, a.CRSTITLE, a.CODE, CLASSCOUNT FROM
         (SELECT CRSSUBJCD, CRSNBR, CRSTITLE, CRSSUBJCD || ' ' || CRSNBR AS CODE
         FROM courses
-        WHERE CRSSUBJCD LIKE ?) as A
+        WHERE CRSSUBJCD LIKE ?
+        ORDER BY CRSNBR) as A
         LEFT JOIN
         (SELECT CRSSUBJCD || ' ' || CRSNBR as CODE, CRSSUBJCD, CRSNBR, COUNT(*) as CLASSCOUNT
         from grades
