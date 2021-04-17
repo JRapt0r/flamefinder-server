@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const path = require("path");
 
-const fetch = require("node-fetch")
+const fetch = require("node-fetch");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
@@ -21,7 +21,7 @@ const process_description = (course_title, course_desc) => {
     const metadata = course_title.split(". ");
 
     const code = metadata[0].match(/^\w{2,4}\s\d{2,3}/ig)[0];
-    const credit_hours = metadata[metadata.length - 1]
+    const credit_hours = metadata[metadata.length - 1];
     const title = metadata.slice(1, -1).join(". ");
 
     let [CRSSUBJCD, CRSSUBJNBR] = code.split(/\s/);
@@ -132,8 +132,7 @@ router.get('/class', function (req, res) {
 
     query.then(results => {
 
-        if (results.length > 0)
-        {
+        if (results.length > 0) {
             const { DEPTCD, CRSNBR, PrimaryInstructor } = results[0];
 
             // Query similar courses
@@ -400,25 +399,18 @@ router.get('/instructors/:letter', function (req, res) {
     const search = +req.query.search;
     const limit = +req.query.limit;
 
-    const query = knex('grades');
-    query.distinct('PrimaryInstructor');
-    query.orderBy('PrimaryInstructor', 'asc');
+    const query = knex('instructor_fts');
+    query.select(knex.raw("instructor as PrimaryInstructor"));
 
     if (limit) {
         query.limit(limit);
     }
 
     if (search) {
-        const [first, last] = letter.split(/\s/);
-        query.where('PrimaryInstructor', 'LIKE', `%${letter}%`);
-
-        if (first && last) {
-            query.orWhere('PrimaryInstructor', 'LIKE', `${last}%, ${first}%`);
-            query.orWhere('PrimaryInstructor', 'LIKE', `${first}%, ${last}%`);
-        }
+        query.where('PrimaryInstructor', 'MATCH', `${letter}*`);
     }
     else {
-        query.where('PrimaryInstructor', 'LIKE', `${letter}%`);
+        query.where('PrimaryInstructor', 'MATCH', `^${letter}*`);
     }
 
     console.log(query.toString());
