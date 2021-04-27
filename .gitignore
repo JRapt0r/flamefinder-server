@@ -13,7 +13,8 @@ jspm_packages/
 # Optional npm cache directory
 .npm
 
-# Optional eslint cache
+# Eslint
+.eslintrc.js
 .eslintcache
 
 # dotenv environment variables file
