@@ -5,8 +5,11 @@ const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 4000;
 
-// Trun off CORS in production
-if (process.env.DOKKU_APP_TYPE !== "herokuish") {
+// Restrict CORS in production
+if (process.env.DOKKU_APP_TYPE === "herokuish") {
+    app.use(cors({ "origin": "https://flamefinder.xyz" }));
+}
+else {
     app.use(cors());
 }
 
