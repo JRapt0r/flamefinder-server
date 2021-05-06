@@ -2,12 +2,15 @@ require('dotenv').config();
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+
 const app = express();
 const port = process.env.PORT || 4000;
 
-// Restrict CORS in production
+// Restrict CORS/use helmet in production
 if (process.env.DOKKU_APP_TYPE === "herokuish") {
     app.use(cors({ "origin": "https://flamefinder.xyz" }));
+    app.use(helmet());
 }
 else {
     app.use(cors());

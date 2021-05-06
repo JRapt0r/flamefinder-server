@@ -247,14 +247,14 @@ router.get("/course_info", function(req, res) {
     const department = req.query.department || null;
     const course_number = req.query.course_number || null;
 
-    if (department) {
+    if (department && department.match(/^[A-Z]{2,4}$/i)) {
         query.where({ "CRSSUBJCD": department });
     }
     else {
         return res.status(400).json({ "code": 400, "msg": "Bad Request" });
     }
 
-    if (course_number) {
+    if (course_number && course_number.match(/^[0-9]{2,3}$/)) {
         query.where({ "CRSNBR": course_number });
     }
     else {
@@ -374,6 +374,7 @@ router.get("/instructor/:PrimaryInstructor", (req, res) => {
         query.sum("D as D");
         query.sum("F as F");
         query.sum("W as W");
+        query.select(knex.raw("SUM(ADV)+SUM(CR)+SUM(DFR)+SUM(I)+SUM(NG)+SUM(NR)+SUM(O)+SUM(PR)+SUM(S)+SUM(U) AS other"));
     }
 
     // Exclude classes where instructor didn't submit grades on time
@@ -382,6 +383,54 @@ router.get("/instructor/:PrimaryInstructor", (req, res) => {
 
     query.groupBy("PrimaryInstructor");
     query.where({ "PrimaryInstructor": PrimaryInstructor });
+
+    query.then(results => {
+        if (results.length > 0) {
+            return res.send(results[0]);
+        }
+        else {
+            return res.status(404).json({ "code": 404, "msg": "Not Found" });
+        }
+    })
+    .then(null, err => {
+        return res.status(500).json({ "code": 500, "msg": err.code });
+    });
+});
+
+router.get("/course_overview", function (req, res) {
+    const { CRSSUBJCD, CRSNBR } = req.query;
+
+    const query = knex("grades");
+    query.select("CRSSUBJCD", "CRSNBR", "CRSTITLE");
+    query.select(knex.raw("CRSSUBJCD || ' ' || CRSNBR AS CODE"));
+    query.select(knex.raw("ROUND((((SUM(D)+SUM(F)+SUM(W))*1.0)/((SUM(A)+SUM(B)+SUM(C)+SUM(D)+SUM(F)+SUM(w))*1.0))*100.0,2) AS dfw_rate"));
+    query.select(knex.raw("ROUND((((SUM(A)*4.0)+(SUM(B)*3.0)+(SUM(C)*2.0)+(SUM(D)*1.0)+(SUM(F)*0.0))/((SUM(A)+SUM(B)+SUM(C)+SUM(D)+SUM(F)))),2) as avg_gpa"));
+
+    query.sum("A as A");
+    query.sum("B as B");
+    query.sum("C as C");
+    query.sum("D as D");
+    query.sum("F as F");
+    query.sum("W as W");
+    query.select(knex.raw("SUM(ADV)+SUM(CR)+SUM(DFR)+SUM(I)+SUM(NG)+SUM(NR)+SUM(O)+SUM(PR)+SUM(S)+SUM(U) AS other"));
+
+
+    // Ensure user input is valid
+    if (CRSSUBJCD && CRSSUBJCD.match(/^[A-Z]{2,4}$/i)) {
+        query.where({ "CRSSUBJCD": CRSSUBJCD });
+    }
+    else {
+        return res.status(400).json({ "code": 400, "msg": "Bad Request" });
+    }
+
+    if (CRSNBR && CRSNBR.match(/^[0-9]{2,3}$/)) {
+        query.where({ "CRSNBR": CRSNBR });
+    }
+    else {
+        return res.status(400).json({ "code": 400, "msg": "Bad Request" });
+    }
+
+    query.groupBy("CODE");
 
     query.then(results => {
         if (results.length > 0) {
