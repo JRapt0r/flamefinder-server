@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -7,9 +7,20 @@ const helmet = require("helmet");
 const app = express();
 const port = process.env.PORT || 4000;
 
+// Allow multiple CNAMEs
+const allowed_origins = ["https://flamefinder.xyz", "https://www.flamefinder.xyz"];
+
+const corsOptions = { origin: (origin, callback) => {
+    if (allowed_origins.includes(origin))
+      callback(null, true);
+    else
+      callback(new Error("CORS Error"));
+  }
+}
+
 // Restrict CORS/use helmet in production
 if (process.env.DOKKU_APP_TYPE === "herokuish") {
-    app.use(cors({ "origin": "https://flamefinder.xyz" }));
+    app.use(cors(corsOptions));
     app.use(helmet());
 }
 else {

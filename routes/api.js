@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 
 const express = require("express");
 const router = express.Router();
@@ -53,6 +53,11 @@ const process_description = (course_title, course_desc) => {
     });
 };
 
+/*
+    Makes proxy request to the UIC course catalog api.
+    Returns response identical to course route, given the
+    course requested exists.
+*/
 router.get("/proxy", function(req, res) {
     const {CRSSUBJCD} = req.query;
     const {CRSNBR} = req.query;
@@ -95,16 +100,17 @@ router.get("/proxy", function(req, res) {
 });
 
 router.post("/contact", message_limit, async function(req, res) {
-    let db_resp;
     const { name, email, message } = req.body;
+
+    // Doesn't work with my reverse proxy...
     const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
     try {
-        db_resp = await knex("messages").insert({
+        let db_resp = await knex("messages").insert({
             "name": name,
             "email": email,
             "message": message,
-            "date": (Date.now() * 0.001) | 0,
+            "date": (Date.now() * 0.001) | 0, // UNIX timestamp
             "ip_addr": ip,
         });
         return res.send("Message sent successfully!");
