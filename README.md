@@ -15,7 +15,7 @@ Back end code for [FlameFinder](https://github.com/JRapt0r/flamefinder). Handles
 
 ## Usage
 
-Clone the repository, and then use the following commands.
+Clone this repository and then use the following commands:
 
 ``` bash
 # Navigate to the root directory
